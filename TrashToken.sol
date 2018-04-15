@@ -1,37 +1,38 @@
 pragma solidity ^0.4.18;
 
 library SafeMath {
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a * b;
-    assert(a == 0 || c / a == b);
-    return c;
-  }
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a * b;
+        assert(a == 0 || c / a == b);
+        return c;
+    }
 
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a / b;
-    return c;
-  }
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a / b;
+        return c;
+    }
 
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    assert(b <= a); 
-    return a - b; 
-  } 
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        assert(b <= a); 
+        return a - b; 
+    } 
   
-  function add(uint256 a, uint256 b) internal pure returns (uint256) { 
-    uint256 c = a + b; assert(c >= a);
-    return c;
-  }
+    function add(uint256 a, uint256 b) internal pure returns (uint256) { 
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
 }
 
 contract ERC20 {
-      uint256 public totalSupply;
-      function balanceOf(address who) public constant returns (uint256);
-      function transfer(address to, uint256 value) public returns (bool);
-      function transferFrom(address from, address to, uint256 value) public returns (bool);
-      function allowance(address owner, address spender) public constant returns (uint256);
-      function approve(address spender, uint256 value) public returns (bool);
-      event Transfer(address indexed from, address indexed to, uint256 value);
-      event Approval(address indexed owner, address indexed spender, uint256 value);
+    uint256 public totalSupply;
+    function balanceOf(address who) public constant returns (uint256);
+    function transfer(address to, uint256 value) public returns (bool);
+    function transferFrom(address from, address to, uint256 value) public returns (bool);
+    function allowance(address owner, address spender) public constant returns (uint256);
+    function approve(address spender, uint256 value) public returns (bool);
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
   
 }
 
@@ -81,25 +82,25 @@ contract ERC20Token is ERC20{
 
 contract TrashToken is ERC20Token{
     address owner = msg.sender;
-    string public constant name = "TrashToken";
-    string public constant symbol = "TRSH";
+    string public constant name = "Trash";
+    string public constant symbol = "TRSH1";
     uint32 public constant decimals = 18;
-    
     uint256 public totalSupply = 0;
 }
 
 contract Crowdsale is TrashToken{
-    bool public purchasingAllowed = false;
+    bool public saleOn = false;
     uint256 public totalContribution = 0;
+    uint256 public totalContributors = 0;
     
-    function enablePurchasing() public {
+    function enableSales() public {
         require(msg.sender == owner);
-        purchasingAllowed = true;
+        saleOn = true;
     }
 
-    function disablePurchasing() public {
+    function disableSales() public {
         require(msg.sender == owner);
-        purchasingAllowed = false;
+        saleOn = false;
     }
     
     function mint(address to, uint256 amount) internal returns (bool) {
@@ -109,14 +110,30 @@ contract Crowdsale is TrashToken{
         return true;
     }
     
+    function getStats() public constant returns(uint256, uint256, uint256) {
+        return (totalContribution, totalContributors, totalSupply);
+    }
+    
     function() public payable{
-        require(purchasingAllowed);
+        uint256 reward = 0;
+        
+        require(saleOn);
         require(msg.value > 0);
 
         owner.transfer(msg.value);
         totalContribution = totalContribution.add(msg.value);
+        totalContributors = totalContributors.add(1);
         
-        mint(msg.sender, msg.value);
+        if (msg.value >= 10 finney) {
+            if(totalContributors < 11){
+                reward = msg.value.mul(100).add(msg.value.mul(50).div(100));
+            }else{
+                reward = msg.value.mul(100).add(msg.value.mul(totalContributors).div(100));
+            }
+        }else{
+            reward = msg.value.mul(100);
+        }
+        mint(msg.sender, reward);
     }
     
     event Mint(address indexed to, uint256 amount);
