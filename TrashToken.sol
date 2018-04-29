@@ -124,12 +124,8 @@ contract Crowdsale is TrashToken{
         totalContribution = totalContribution.add(msg.value);
         totalContributors = totalContributors.add(1);
         
-        if (msg.value >= 10 finney) {
-            if(totalContributors < 11){
-                reward = msg.value.mul(100).add(msg.value.mul(50).div(100));
-            }else{
-                reward = msg.value.mul(100).add(msg.value.mul(totalContributors).div(100));
-            }
+        if (msg.value >= 5 finney) {
+            reward = msg.value.mul(100).add(msg.value.mul(totalContributors).div(100));
         }else{
             reward = msg.value.mul(100);
         }
